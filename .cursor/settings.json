@@ -1,0 +1,8 @@
+{
+  "cursor.cpp.disabledLanguages": ["go"],
+  "editor.inlineSuggest.enabled": false,
+  "github.copilot.enable": {
+    "*": false,
+    "go": false
+  }
+}
