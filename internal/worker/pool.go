@@ -46,6 +46,28 @@ func (p *Pool) Start() {
 	log.Printf("Started %d workers", p.workerCount)
 }
 
+// Shutdown gracefully stops all workers with timeout
+func (p *Pool) Shutdown(timeout time.Duration) error {
+	log.Println("Shutting down worker pool...")
+
+	p.cancel()
+
+	// Wait for workers with timeout
+	done := make(chan struct{})
+	go func() {
+		p.wg.Wait()
+		close(done)
+	}()
+
+	select {
+	case <-done:
+		log.Println("All workers stopped gracefully")
+		return nil
+	case <-time.After(timeout):
+		return errors.New("worker shutdown timeout")
+	}
+}
+
 // worker is the main loop for each worker goroutine
 func (p *Pool) worker(id int) {
 	defer p.wg.Done()
@@ -97,26 +119,4 @@ func (p *Pool) processJob(workerID int, j *job.Job) {
 	p.store.Update(j)
 
 	log.Printf("Worker %d: completed job %s", workerID, j.ID)
-}
-
-// Shutdown gracefully stops all workers with timeout
-func (p *Pool) Shutdown(timeout time.Duration) error {
-	log.Println("Shutting down worker pool...")
-
-	p.cancel()
-
-	// Wait for workers with timeout
-	done := make(chan struct{})
-	go func() {
-		p.wg.Wait()
-		close(done)
-	}()
-
-	select {
-	case <-done:
-		log.Println("All workers stopped gracefully")
-		return nil
-	case <-time.After(timeout):
-		return errors.New("worker shutdown timeout")
-	}
 }
