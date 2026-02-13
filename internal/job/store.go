@@ -24,8 +24,8 @@ func NewStore(queueSize int) *Store {
 // Create adds a job to the store and queue
 func (s *Store) Create(ctx context.Context, job *Job) error {
 	s.mu.Lock()
+	defer s.mu.Unlock()
 	s.jobs[job.ID] = job
-	s.mu.Unlock()
 
 	// Try to add to queue
 	select {
