@@ -3,6 +3,9 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/apgupta3091/job-runner/internal/job"
 	"github.com/apgupta3091/job-runner/internal/worker"
@@ -36,6 +39,11 @@ func main() {
 	}()
 
 	// Wait for shutdown signal
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
+	<-sigChan
+
+	log.Println("Shutdown signal received")
 
 	//Graceful shutdown sequence
 }
